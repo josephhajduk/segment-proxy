@@ -33,7 +33,7 @@ func NewSegmentReverseProxy(cdn *url.URL, trackingAPI *url.URL) http.Handler {
 	director := func(req *http.Request) {
 		// Figure out which server to redirect to based on the incoming request.
 
-		// maps "/analytics.js/v1" which is blocked by ublock to "/sneakalytics.js/v1"
+		// maps "/analytics" to "/sneakalytics" to get past adblockers that match on the path.
 
 		var target *url.URL
 		if strings.HasPrefix(req.URL.String(), "/v1/projects") || strings.HasPrefix(req.URL.String(), "/sneakalytics.js/v1") {
@@ -45,7 +45,7 @@ func NewSegmentReverseProxy(cdn *url.URL, trackingAPI *url.URL) http.Handler {
 		targetQuery := target.RawQuery
 		req.URL.Scheme = target.Scheme
 		req.URL.Host = target.Host
-		req.URL.Path = strings.Replace(singleJoiningSlash(target.Path, req.URL.Path), "/sneakalytics.js/v1", "/analytics.js/v1", -1)
+		req.URL.Path = strings.Replace(singleJoiningSlash(target.Path, req.URL.Path), "/sneakalytics", "/analytics", -1)
 		if targetQuery == "" || req.URL.RawQuery == "" {
 			req.URL.RawQuery = targetQuery + req.URL.RawQuery
 		} else {
