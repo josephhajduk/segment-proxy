@@ -32,8 +32,11 @@ func singleJoiningSlash(a, b string) string {
 func NewSegmentReverseProxy(cdn *url.URL, trackingAPI *url.URL) http.Handler {
 	director := func(req *http.Request) {
 		// Figure out which server to redirect to based on the incoming request.
+
+		// maps "/analytics.js/v1" which is blocked by ublock to "/sneakalytics.js/v1"
+
 		var target *url.URL
-		if strings.HasPrefix(req.URL.String(), "/v1/projects") || strings.HasPrefix(req.URL.String(), "/analytics.js/v1") {
+		if strings.HasPrefix(req.URL.String(), "/v1/projects") || strings.HasPrefix(req.URL.String(), "/sneakalytics.js/v1") {
 			target = cdn
 		} else {
 			target = trackingAPI
@@ -42,7 +45,7 @@ func NewSegmentReverseProxy(cdn *url.URL, trackingAPI *url.URL) http.Handler {
 		targetQuery := target.RawQuery
 		req.URL.Scheme = target.Scheme
 		req.URL.Host = target.Host
-		req.URL.Path = singleJoiningSlash(target.Path, req.URL.Path)
+		req.URL.Path = strings.Replace(singleJoiningSlash(target.Path, req.URL.Path), "/sneakalytics.js/v1", "/analytics.js/v1", -1)
 		if targetQuery == "" || req.URL.RawQuery == "" {
 			req.URL.RawQuery = targetQuery + req.URL.RawQuery
 		} else {
